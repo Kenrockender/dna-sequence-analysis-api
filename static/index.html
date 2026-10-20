@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Sequence Analysis</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧬 DNA Sequence Analysis</h1>
+            <p class="subtitle">Align sequences and translate DNA to protein</p>
+        </header>
+
+        <main>
+            <!-- Input Section -->
+            <section class="input-section">
+                <h2>Upload FASTA File</h2>
+                
+                <div class="file-upload" id="dropZone">
+                    <input type="file" id="fileInput" accept=".fasta,.fa,.txt" hidden>
+                    <div class="upload-prompt">
+                        <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p>Drop FASTA file here or <button type="button" onclick="document.getElementById('fileInput').click()" class="browse-btn">browse</button></p>
+                        <p class="file-hint">Accepts .fasta, .fa, .txt files (max 1000 bp)</p>
+                    </div>
+                    <div id="fileName" class="file-name"></div>
+                </div>
+
+                <!-- Sample Files -->
+                <div class="sample-section">
+                    <label for="sampleSelect">Or load a sample:</label>
+                    <select id="sampleSelect" class="sample-select">
+                        <option value="">-- Select Sample --</option>
+                        <option value="patient_01">Patient 01 (Perfect match)</option>
+                        <option value="patient_02">Patient 02 (3 SNVs)</option>
+                        <option value="patient_03">Patient 03 (Deletions)</option>
+                        <option value="patient_04">Patient 04 (N regions)</option>
+                        <option value="patient_05">Patient 05 (Insertions)</option>
+                    </select>
+                </div>
+
+                <!-- Operation Selection -->
+                <div class="operation-section">
+                    <h3>Select Operation</h3>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="operation" value="align" checked>
+                            <span>Align - Find variants (SNVs, insertions, deletions)</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="operation" value="translate">
+                            <span>Translate - Convert DNA to protein</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="operation" value="analyze">
+                            <span>Analyze - Full analysis with variant effects</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Frame Selection (for translate) -->
+                <div id="frameSection" class="frame-section" style="display: none;">
+                    <label for="frameSelect">Reading Frame:</label>
+                    <select id="frameSelect" class="frame-select">
+                        <option value="1" selected>Frame 1</option>
+                        <option value="2">Frame 2</option>
+                        <option value="3">Frame 3</option>
+                    </select>
+                </div>
+
+                <!-- Run Button -->
+                <button id="runButton" class="run-button" disabled>
+                    <span class="button-text">Run Analysis</span>
+                    <span class="button-loader" style="display: none;">⏳ Processing...</span>
+                </button>
+            </section>
+
+            <!-- Error Display -->
+            <div id="errorDisplay" class="error-display" style="display: none;"></div>
+
+            <!-- Results Section -->
+            <section id="resultsSection" class="results-section" style="display: none;">
+                <h2>Results</h2>
+                
+                <!-- Sequence Info -->
+                <div id="sequenceInfo" class="info-card"></div>
+
+                <!-- Alignment Results -->
+                <div id="alignmentResults" class="results-card" style="display: none;">
+                    <h3>Alignment</h3>
+                    <div id="alignmentStats"></div>
+                    <div id="variantsTable"></div>
+                    <div id="alignmentViewer"></div>
+                </div>
+
+                <!-- Translation Results -->
+                <div id="translationResults" class="results-card" style="display: none;">
+                    <h3>Translation</h3>
+                    <div id="translationData"></div>
+                </div>
+
+                <!-- Analyze Results -->
+                <div id="analyzeResults" class="results-card" style="display: none;">
+                    <h3>Comprehensive Analysis</h3>
+                    <div id="analyzeData"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>DNA Sequence Analysis API • <a href="/docs" target="_blank">API Documentation</a></p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
