@@ -105,7 +105,21 @@ pytest tests/test_align_api.py -v
 pytest --cov=app --cov-report=html
 ```
 
-**Test Results**: All 120 tests passing ✅
+**Test Results**:
+```
+======================= test session starts =======================
+120 passed, 3 warnings in 0.64s
+======================= 120 passed in 0.64s =======================
+```
+
+**Test Breakdown**:
+- ✅ 32 FASTA validation tests
+- ✅ 31 translation tests (frames, stops, N handling)
+- ✅ 27 alignment and variant extraction tests
+- ✅ 13 align endpoint tests (all patient files)
+- ✅ 17 translate endpoint tests
+
+All edge cases covered including N nucleotides, incomplete codons, stop codons, gaps, and error conditions.
 
 ## Alignment Scoring
 
