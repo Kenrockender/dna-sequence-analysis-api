@@ -413,7 +413,7 @@ body.dark-theme .run-button:not(:disabled) { color: #15251b; }
 .stat-value { margin-top: 4px; color: var(--accent); font-size: clamp(1.45rem, 3.5vw, 1.85rem); font-weight: 690; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
 
 #variantsTable, #analyzeData { overflow-x: auto; }
-.variants-table { width: 100%; min-width: 520px; margin: 12px 0 0; border: 1px solid var(--border); border-collapse: separate; border-spacing: 0; border-radius: 9px; overflow: hidden; font-size: 0.84rem; }
+.variants-table { width: 100%; min-width: 320px; margin: 12px 0 0; border: 1px solid var(--border); border-collapse: separate; border-spacing: 0; border-radius: 9px; overflow: hidden; font-size: 0.84rem; }
 .variants-table th, .variants-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
 .variants-table th { color: var(--muted); font-size: 0.7rem; font-weight: 680; background: var(--surface-muted); }
 .variants-table tr:last-child td { border-bottom: 0; }
@@ -496,7 +496,7 @@ footer a:hover { text-decoration: underline; text-underline-offset: 3px; }
 :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 36%, transparent); outline-offset: 2px; }
 
 @media (max-width: 800px) {
-    .container { width: min(100% - 28px, 680px); padding-top: 20px; }
+    .container { width: calc(100% - 28px); padding-top: 20px; }
     .hero { align-items: flex-start; flex-direction: column; gap: 21px; }
     .hero-meta { width: 100%; }
     .meta-item:first-child { padding-left: 0; border-left: 0; }
@@ -527,6 +527,11 @@ footer a:hover { text-decoration: underline; text-underline-offset: 3px; }
     .stats-mini-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .frame-section { align-items: flex-start; flex-direction: column; gap: 8px; }
     .frame-select { width: 100%; }
+    
+    /* Make tables more mobile-friendly */
+    .variants-table { font-size: 0.72rem; min-width: 0; }
+    .variants-table th, .variants-table td { padding: 7px 6px; }
+    .variant-type, .effect-badge { font-size: 0.65rem; padding: 2px 5px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
