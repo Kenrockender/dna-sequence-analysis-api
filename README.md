@@ -2,12 +2,14 @@
 
 A REST API for DNA sequence alignment and protein translation, built with FastAPI and Biopython.
 
+Repository: [github.com/Kenrockender/bioinformatics-test](https://github.com/Kenrockender/bioinformatics-test)
+
 ## Features
 
 - **Sequence Alignment**: Align DNA sequences to a reference genome and identify variants (SNVs, insertions, deletions)
 - **Protein Translation**: Translate DNA sequences to protein in reading frames 1-3
 - **Robust Validation**: Comprehensive FASTA format validation with clear error messages
-- **Well-Tested**: 120+ passing tests covering all functionality
+- **Well-Tested**: Automated tests cover the API contract, supplied samples, validation edge cases, and bonus analysis endpoint
 
 ## Installation
 
@@ -107,9 +109,7 @@ pytest --cov=app --cov-report=html
 
 **Test Results**:
 ```
-======================= test session starts =======================
-120 passed, 3 warnings in 0.64s
-======================= 120 passed in 0.64s =======================
+136 passed, 3 warnings
 ```
 
 **Test Breakdown**:
@@ -118,6 +118,7 @@ pytest --cov=app --cov-report=html
 - ✅ 27 alignment and variant extraction tests
 - ✅ 13 align endpoint tests (all patient files)
 - ✅ 17 translate endpoint tests
+- ✅ 16 API-level requirement regression tests, including every supplied patient file and `/api/analyze`
 
 All edge cases covered including N nucleotides, incomplete codons, stop codons, gaps, and error conditions.
 

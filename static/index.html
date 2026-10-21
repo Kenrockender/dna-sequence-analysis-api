@@ -3,116 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Sequence Analysis</title>
+    <meta name="description" content="A focused workspace for DNA sequence alignment, translation, and variant review.">
+    <meta name="theme-color" content="#f5f7f5">
+    <title>DNA Sequence Analysis · Sequence Lab</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🧬 DNA Sequence Analysis</h1>
-            <p class="subtitle">Align sequences and translate DNA to protein</p>
+        <header class="hero">
+            <div class="hero-copy">
+                <h1>
+                    DNA sequence analysis
+                </h1>
+            </div>
+            <div class="hero-meta" aria-label="Analysis reference details">
+                <div class="meta-item">
+                    <span>Reference</span>
+                    <strong>REF_001</strong>
+                </div>
+                <div class="meta-item">
+                    <span>Input limit</span>
+                    <strong>1,000 bp</strong>
+                </div>
+                <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme" title="Toggle color theme">
+                    <svg class="theme-icon sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1.5m0 15V21m9-9h-1.5m-15 0H3m15.36 6.36-1.06-1.06M6.7 6.7 5.64 5.64m12.72 0L17.3 6.7M6.7 17.3l-1.06 1.06M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/>
+                    </svg>
+                    <svg class="theme-icon moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.2 15.3A8.5 8.5 0 0 1 8.7 3.8 8.8 8.8 0 1 0 20.2 15.3Z"/>
+                    </svg>
+                </button>
+            </div>
         </header>
 
         <main>
-            <!-- Input Section -->
-            <section class="input-section">
-                <h2>Upload FASTA File</h2>
-                
-                <div class="file-upload" id="dropZone">
-                    <input type="file" id="fileInput" accept=".fasta,.fa,.txt" hidden>
-                    <div class="upload-prompt">
-                        <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            <section class="input-section" aria-labelledby="inputHeading">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Input</p>
+                        <h2 id="inputHeading">Choose your sequence</h2>
+                    </div>
+                    <span class="section-badge">FASTA format</span>
+                </div>
+
+                <div class="input-grid">
+                    <div class="sequence-column">
+                        <div class="file-upload" id="dropZone" role="button" tabindex="0" aria-label="Choose a FASTA file or drop one here">
+                            <input type="file" id="fileInput" accept=".fasta,.fa,.txt" aria-describedby="fileHint" hidden>
+                            <div class="upload-prompt">
+                                <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4.5 15.5v3A2.5 2.5 0 0 0 7 21h10a2.5 2.5 0 0 0 2.5-2.5v-3"/>
+                                </svg>
+                                <p class="upload-title">Drop a sequence file here</p>
+                                <p class="upload-subtitle">or click to browse your files</p>
+                                <p id="fileHint" class="file-hint">.fasta, .fa or .txt <span aria-hidden="true">·</span> up to 1,000 bp</p>
+                            </div>
+                            <div id="fileName" class="file-name" role="status" aria-live="polite"></div>
+                        </div>
+
+                        <div class="sample-section">
+                            <label for="sampleSelect">Or use an example sequence</label>
+                            <select id="sampleSelect" class="sample-select">
+                                <option value="">Choose an example…</option>
+                                <option value="patient_01">Example 01 — exact match</option>
+                                <option value="patient_02">Example 02 — three SNVs</option>
+                                <option value="patient_03">Example 03 — deletions</option>
+                                <option value="patient_04">Example 04 — ambiguous bases (N)</option>
+                                <option value="patient_05">Example 05 — insertions</option>
+                            </select>
+                        </div>
+
+                        <div id="sequenceStats" class="sequence-stats" style="display: none;">
+                            <h4>Sequence composition</h4>
+                            <div class="stats-mini-grid">
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">Length</span>
+                                    <strong id="statLength">-</strong>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">GC content</span>
+                                    <strong id="statGC">-</strong>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">A</span>
+                                    <strong id="statA">-</strong>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">C</span>
+                                    <strong id="statC">-</strong>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">G</span>
+                                    <strong id="statG">-</strong>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">T</span>
+                                    <strong id="statT">-</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-column">
+                        <div class="operation-section">
+                            <div class="section-heading compact">
+                                <div>
+                                    <p class="eyebrow">Analysis</p>
+                                    <h3>Select an operation</h3>
+                                </div>
+                            </div>
+                            <div class="radio-group">
+                                <label class="radio-label" title="Compare the sequence to the reference and identify variants">
+                                    <input type="radio" name="operation" value="align" checked>
+                                    <span class="radio-copy">
+                                        <strong>Align</strong>
+                                        <small>Find substitutions, insertions and deletions</small>
+                                    </span>
+                                </label>
+                                <label class="radio-label" title="Translate the DNA sequence into an amino acid sequence">
+                                    <input type="radio" name="operation" value="translate">
+                                    <span class="radio-copy">
+                                        <strong>Translate</strong>
+                                        <small>Convert DNA into a protein sequence</small>
+                                    </span>
+                                </label>
+                                <label class="radio-label" title="Combine alignment results with predicted variant effects">
+                                    <input type="radio" name="operation" value="analyze">
+                                    <span class="radio-copy">
+                                        <strong>Analyze</strong>
+                                        <small>Review variants and their predicted effects</small>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="frameSection" class="frame-section" style="display: none;">
+                            <label for="frameSelect">
+                                Reading frame
+                                <span class="help-icon" title="Frame 1 starts at position 1, Frame 2 at position 2, and Frame 3 at position 3. The same DNA sequence can produce different translations in each frame." aria-label="Reading frame help">i</span>
+                            </label>
+                            <select id="frameSelect" class="frame-select">
+                                <option value="1" selected>Frame 1</option>
+                                <option value="2">Frame 2</option>
+                                <option value="3">Frame 3</option>
+                            </select>
+                        </div>
+
+                        <p class="analysis-note">Tip: choose <strong>Analyze</strong> to see variant calls alongside their predicted effects.</p>
+                    </div>
+                </div>
+
+                <button id="runButton" class="run-button" type="button" disabled>
+                    <span class="button-text">Run analysis</span>
+                    <span class="button-loader" style="display: none;">
+                        <svg class="spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle class="spinner-track" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"/>
+                            <path class="spinner-path" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.37 0 0 5.37 0 12h4z" opacity="0.8"/>
                         </svg>
-                        <p>Drop FASTA file here or <button type="button" onclick="document.getElementById('fileInput').click()" class="browse-btn">browse</button></p>
-                        <p class="file-hint">Accepts .fasta, .fa, .txt files (max 1000 bp)</p>
-                    </div>
-                    <div id="fileName" class="file-name"></div>
-                </div>
-
-                <!-- Sample Files -->
-                <div class="sample-section">
-                    <label for="sampleSelect">Or load a sample:</label>
-                    <select id="sampleSelect" class="sample-select">
-                        <option value="">-- Select Sample --</option>
-                        <option value="patient_01">Patient 01 (Perfect match)</option>
-                        <option value="patient_02">Patient 02 (3 SNVs)</option>
-                        <option value="patient_03">Patient 03 (Deletions)</option>
-                        <option value="patient_04">Patient 04 (N regions)</option>
-                        <option value="patient_05">Patient 05 (Insertions)</option>
-                    </select>
-                </div>
-
-                <!-- Operation Selection -->
-                <div class="operation-section">
-                    <h3>Select Operation</h3>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="operation" value="align" checked>
-                            <span>Align - Find variants (SNVs, insertions, deletions)</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="operation" value="translate">
-                            <span>Translate - Convert DNA to protein</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="operation" value="analyze">
-                            <span>Analyze - Full analysis with variant effects</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Frame Selection (for translate) -->
-                <div id="frameSection" class="frame-section" style="display: none;">
-                    <label for="frameSelect">Reading Frame:</label>
-                    <select id="frameSelect" class="frame-select">
-                        <option value="1" selected>Frame 1</option>
-                        <option value="2">Frame 2</option>
-                        <option value="3">Frame 3</option>
-                    </select>
-                </div>
-
-                <!-- Run Button -->
-                <button id="runButton" class="run-button" disabled>
-                    <span class="button-text">Run Analysis</span>
-                    <span class="button-loader" style="display: none;">⏳ Processing...</span>
+                        Running analysis…
+                    </span>
                 </button>
             </section>
 
-            <!-- Error Display -->
-            <div id="errorDisplay" class="error-display" style="display: none;"></div>
+            <div id="errorDisplay" class="error-display" role="alert" aria-live="assertive" style="display: none;"></div>
 
-            <!-- Results Section -->
-            <section id="resultsSection" class="results-section" style="display: none;">
-                <h2>Results</h2>
-                
-                <!-- Sequence Info -->
+            <section id="resultsSection" class="results-section" tabindex="-1" aria-live="polite" style="display: none;">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Output</p>
+                        <h2>Analysis results</h2>
+                    </div>
+                    <div class="results-actions">
+                        <button id="downloadBtn" class="action-btn" type="button" title="Download results">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+                            </svg>
+                            Download
+                        </button>
+                        <button id="copyBtn" class="action-btn" type="button" title="Copy results to clipboard">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 8V5.5A1.5 1.5 0 0 1 9.5 4h8A1.5 1.5 0 0 1 19 5.5v10a1.5 1.5 0 0 1-1.5 1.5H15M5 8h8a1.5 1.5 0 0 1 1.5 1.5v10A1.5 1.5 0 0 1 13 21H5a1.5 1.5 0 0 1-1.5-1.5v-10A1.5 1.5 0 0 1 5 8Z"/>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
                 <div id="sequenceInfo" class="info-card"></div>
 
-                <!-- Alignment Results -->
                 <div id="alignmentResults" class="results-card" style="display: none;">
                     <h3>Alignment</h3>
                     <div id="alignmentStats"></div>
+                    <div id="variantMap" class="variant-map"></div>
                     <div id="variantsTable"></div>
                     <div id="alignmentViewer"></div>
                 </div>
 
-                <!-- Translation Results -->
                 <div id="translationResults" class="results-card" style="display: none;">
                     <h3>Translation</h3>
                     <div id="translationData"></div>
                 </div>
 
-                <!-- Analyze Results -->
                 <div id="analyzeResults" class="results-card" style="display: none;">
-                    <h3>Comprehensive Analysis</h3>
+                    <h3>Comprehensive analysis</h3>
                     <div id="analyzeData"></div>
                 </div>
             </section>
         </main>
 
         <footer>
-            <p>DNA Sequence Analysis API • <a href="/docs" target="_blank">API Documentation</a></p>
+            <p>Sequence Lab <span aria-hidden="true">·</span> DNA Sequence Analysis <span class="footer-separator" aria-hidden="true">/</span> <a href="/docs" target="_blank" rel="noreferrer">API documentation <span aria-hidden="true">↗</span></a></p>
         </footer>
     </div>
 

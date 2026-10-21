@@ -40,7 +40,7 @@ Expected output:
 pytest -v
 ```
 
-All 120 tests should pass.
+All 136 tests should pass.
 
 ### 4. Start the API Server
 ```bash
