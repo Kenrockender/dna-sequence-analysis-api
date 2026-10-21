@@ -285,6 +285,7 @@ function displayAlignmentResults(data) {
     }
     
     // Alignment viewer
+    lastDrawnData = { ref: data.alignment.reference_aligned, qry: data.alignment.query_aligned };
     displayAlignment(data.alignment.reference_aligned, data.alignment.query_aligned);
 }
 
@@ -384,29 +385,134 @@ function displayAnalyzeResults(data) {
 
 function displayAlignment(refSeq, querySeq) {
     const viewer = document.getElementById('alignmentViewer');
-    const blockSize = 60;
-    let html = '<h4>Alignment</h4><div class="alignment-viewer">';
+    
+    // Calculate how many columns fit based on screen width (like the reference implementation)
+    const blockSize = calculateColumnsPerBlock();
+    console.log('Displaying alignment with block size:', blockSize);
+    
+    let html = '<h4>Alignment</h4><div class="aln-container">';
+    
+    let refCount = 0;
+    let qryCount = 0;
     
     for (let i = 0; i < refSeq.length; i += blockSize) {
         const refBlock = refSeq.substring(i, i + blockSize);
         const queryBlock = querySeq.substring(i, i + blockSize);
         
-        html += `<div class="alignment-block">`;
-        html += `<div class="alignment-position">${i + 1}</div>`;
-        html += `<div class="alignment-row">`;
-        html += `<span class="sequence-label">Ref:</span>`;
-        html += `<span class="sequence-text monospace">${highlightDifferences(refBlock, queryBlock, 'ref')}</span>`;
+        // Count non-gap bases for position numbering
+        const refBases = refBlock.replace(/-/g, '').length;
+        const qryBases = queryBlock.replace(/-/g, '').length;
+        
+        html += `<div class="aln-block">`;
+        
+        // Reference row
+        html += `<div class="aln-row">`;
+        html += `<span class="aln-label">REF</span>`;
+        html += `<span class="aln-pos">${refBases ? refCount + 1 : ''}</span>`;
+        
+        for (let j = 0; j < refBlock.length; j++) {
+            const refChar = refBlock[j];
+            const queryChar = queryBlock[j];
+            const state = getColumnState(refChar, queryChar);
+            html += `<span class="aln-base ${refChar} ${state}">${refChar === '-' ? '–' : refChar}</span>`;
+        }
         html += `</div>`;
-        html += `<div class="alignment-row">`;
-        html += `<span class="sequence-label">Query:</span>`;
-        html += `<span class="sequence-text monospace">${highlightDifferences(queryBlock, refBlock, 'query')}</span>`;
+        
+        // Query row
+        html += `<div class="aln-row">`;
+        html += `<span class="aln-label">QRY</span>`;
+        html += `<span class="aln-pos">${qryBases ? qryCount + 1 : ''}</span>`;
+        
+        for (let j = 0; j < queryBlock.length; j++) {
+            const refChar = refBlock[j];
+            const queryChar = queryBlock[j];
+            const state = getColumnState(refChar, queryChar);
+            html += `<span class="aln-base ${queryChar} ${state}">${queryChar === '-' ? '–' : queryChar}</span>`;
+        }
         html += `</div>`;
+        
         html += `</div>`;
+        
+        refCount += refBases;
+        qryCount += qryBases;
     }
     
     html += '</div>';
+    
+    // Add legend
+    html += `<div class="aln-legend">
+        <span class="legend-item"><span class="legend-box match"></span> match</span>
+        <span class="legend-item"><span class="legend-box mismatch"></span> mismatch (SNV)</span>
+        <span class="legend-item"><span class="legend-box gap"></span> gap (insertion/deletion)</span>
+        <span class="legend-item"><span class="legend-box nn"></span> N (unknown, not a variant)</span>
+    </div>`;
+    
     viewer.innerHTML = html;
 }
+
+function getColumnState(a, b) {
+    if (a === '-' || b === '-') return 'gap';
+    if (a === 'N' || b === 'N') return 'nn';
+    return a === b ? 'match' : 'mismatch';
+}
+
+// Calculate optimal columns per block based on available width
+function calculateColumnsPerBlock() {
+    const viewer = document.getElementById('alignmentViewer');
+    if (!viewer) return 60;
+    
+    // Create probe element exactly like the real alignment
+    const probe = document.createElement('div');
+    probe.className = 'aln-container';
+    probe.style.position = 'absolute';
+    probe.style.visibility = 'hidden';
+    probe.style.left = '0';
+    probe.style.right = '0';
+    
+    const testBase = document.createElement('span');
+    testBase.className = 'aln-base A match';
+    testBase.textContent = 'A';
+    
+    const gutter = document.createElement('span');
+    gutter.className = 'aln-gutter';
+    
+    probe.appendChild(testBase);
+    probe.appendChild(gutter);
+    viewer.appendChild(probe);
+    
+    // Measure
+    const cs = getComputedStyle(probe);
+    const sidePadding = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + 2; // +border
+    const cellWidth = testBase.getBoundingClientRect().width;
+    const gutterWidth = 2.6 + 3.2; // label + pos width in rem, convert to px
+    const gutterPx = gutterWidth * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    
+    viewer.removeChild(probe);
+    
+    const availableWidth = viewer.clientWidth;
+    const roomForBases = availableWidth - sidePadding - gutterPx;
+    const columns = Math.floor(roomForBases / cellWidth);
+    
+    // Round down to multiple of 10, min 10
+    return Math.max(10, Math.floor(columns / 10) * 10);
+}
+
+// Redraw alignment on window resize
+let resizeTimer;
+let lastDrawnData = null;
+let lastDrawnWidth = 0;
+
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        const currentWidth = document.getElementById('alignmentViewer')?.clientWidth || 0;
+        if (lastDrawnData && currentWidth !== lastDrawnWidth) {
+            console.log('Redrawing alignment for width:', currentWidth);
+            lastDrawnWidth = currentWidth;
+            displayAlignment(lastDrawnData.ref, lastDrawnData.qry);
+        }
+    }, 200);
+});
 
 function highlightDifferences(seq1, seq2, type) {
     let result = '';
