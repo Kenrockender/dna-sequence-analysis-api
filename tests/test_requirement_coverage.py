@@ -1,4 +1,3 @@
-"""API-level regression tests for requirements stated in the technical brief."""
 from pathlib import Path
 
 import pytest
@@ -7,15 +6,14 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.services.reference import load_reference
 
-
 load_reference()
 client = TestClient(app)
-PATIENT_DIR = Path("Supporting Files")
+PATIENT_DIR = Path("static/samples")
 
 
 @pytest.mark.parametrize("patient", [f"patient_{number:02d}" for number in range(1, 6)])
 def test_translate_accepts_every_supplied_patient_file(patient: str):
-    """Every supplied input is accepted by the required translation endpoint."""
+    # semua file patient yang disediakan harus diterima endpoint translate
     content = (PATIENT_DIR / f"{patient}.fasta").read_bytes()
 
     response = client.post(
@@ -33,6 +31,7 @@ def test_translate_accepts_every_supplied_patient_file(patient: str):
 
 @pytest.mark.parametrize("endpoint", ["/api/align", "/api/translate"])
 def test_endpoints_normalize_lowercase_multiline_fasta(endpoint: str):
+    # huruf kecil dan multiline harus tetap diterima
     response = client.post(
         endpoint,
         files={"file": ("lowercase.fasta", b">lowercase description\n atg\ncnn \n", "text/plain")},
@@ -73,6 +72,7 @@ def test_endpoints_enforce_sequence_length_limit(endpoint: str):
 
 
 def test_translate_endpoint_handles_n_codons_and_incomplete_final_codon():
+    # N dalam kodon jadi X, kodon tidak lengkap di akhir diabaikan
     response = client.post(
         "/api/translate",
         files={"file": ("ambiguous.fasta", b">ambiguous\nATGNNNAA", "text/plain")},
@@ -89,6 +89,7 @@ def test_translate_endpoint_handles_n_codons_and_incomplete_final_codon():
 
 
 def test_analyze_endpoint_annotates_patient_02_effects():
+    # patient_02 harusnya punya 3 varian dengan efek: synonymous, missense, nonsense
     content = (PATIENT_DIR / "patient_02.fasta").read_bytes()
     response = client.post(
         "/api/analyze",
@@ -98,7 +99,7 @@ def test_analyze_endpoint_annotates_patient_02_effects():
     assert response.status_code == 200
     body = response.json()
     assert body["sequence_id"] == "patient_02"
-    assert [variant["effect"] for variant in body["variants"]] == [
+    assert [v["effect"] for v in body["variants"]] == [
         "synonymous",
         "missense",
         "nonsense",
@@ -106,6 +107,7 @@ def test_analyze_endpoint_annotates_patient_02_effects():
 
 
 def test_analyze_endpoint_classifies_patient_03_indels():
+    # patient_03 varian pertama frameshift, sisanya undetermined
     content = (PATIENT_DIR / "patient_03.fasta").read_bytes()
     response = client.post(
         "/api/analyze",
@@ -113,6 +115,6 @@ def test_analyze_endpoint_classifies_patient_03_indels():
     )
 
     assert response.status_code == 200
-    effects = [variant["effect"] for variant in response.json()["variants"]]
+    effects = [v["effect"] for v in response.json()["variants"]]
     assert effects[0] == "frameshift"
     assert effects[1:] == ["undetermined", "undetermined"]
