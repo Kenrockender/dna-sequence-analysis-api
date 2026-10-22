@@ -1,1 +1,1 @@
-# DNA Sequence Analysis API
+# package utama aplikasi
